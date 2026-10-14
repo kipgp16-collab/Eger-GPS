@@ -135,7 +135,7 @@ public class MainActivity extends Activity {
         for(int i=0;i<points.size();i++){
             final int idx=i;GeoPoint p=points.get(i);
             TextView item=label("📍 "+names.get(i)+"\nN "+String.format(Locale.US,"%.5f",p.getLatitude())+"   E "+String.format(Locale.US,"%.5f",p.getLongitude()),15,Color.WHITE,false);
-            page().addView(item);divider(page);
+            page().addView(item);divider(page());
             item.setOnClickListener(v->{showMap();map.getController().animateTo(points.get(idx));map.getController().setZoom(15.0);});
         }
         TextView add=label("＋ Добавить точку на карте",17,ORANGE,true);page().addView(add);add.setOnClickListener(v->showMap());
