@@ -81,14 +81,14 @@ public class MainActivity extends Activity {
         root.addView(nav,new LinearLayout.LayoutParams(-1,dp(84)));
         // Keep application controls outside Android status and navigation bars.
         root.setOnApplyWindowInsetsListener((view,insets)->{
-            int top,bottom;
+            int insetTop,insetBottom;
             if(Build.VERSION.SDK_INT>=30){
                 android.graphics.Insets bars=insets.getInsets(WindowInsets.Type.systemBars()|WindowInsets.Type.displayCutout());
-                top=bars.top;bottom=bars.bottom;
+                insetTop=bars.top;insetBottom=bars.bottom;
             }else{
-                top=insets.getSystemWindowInsetTop();bottom=insets.getSystemWindowInsetBottom();
+                insetTop=insets.getSystemWindowInsetTop();insetBottom=insets.getSystemWindowInsetBottom();
             }
-            view.setPadding(0,top,0,bottom);
+            view.setPadding(0,insetTop,0,insetBottom);
             return insets;
         });
         setContentView(root);
