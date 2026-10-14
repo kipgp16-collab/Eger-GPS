@@ -12,6 +12,10 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
+import android.view.WindowInsets;
+import android.os.Build;
+import android.text.SpannableString;
+import android.text.style.RelativeSizeSpan;
 import android.widget.*;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
@@ -64,13 +68,31 @@ public class MainActivity extends Activity {
         String[] tabs={"▧\nКарта","♧\nТочки","⌁\nМаршруты","⇩\nЗагрузки","⚙\nНастройки"};
         for(int i=0;i<tabs.length;i++){
             final int index=i;
-            TextView tab=label(tabs[i],11,i==0?ORANGE:Color.WHITE,false);
-            tab.setGravity(Gravity.CENTER);tab.setPadding(0,dp(7),0,dp(7));
-            nav.addView(tab,new LinearLayout.LayoutParams(0,dp(58),1));
+            TextView tab=label(tabs[i],14,i==0?ORANGE:Color.WHITE,false);
+            SpannableString tabText=new SpannableString(tabs[i]);
+            int newline=tabs[i].indexOf("\n");
+            if(newline>0)tabText.setSpan(new RelativeSizeSpan(2.1f),0,newline,0);
+            tab.setText(tabText);
+            tab.setIncludeFontPadding(false);
+            tab.setGravity(Gravity.CENTER);tab.setPadding(dp(1),dp(5),dp(1),dp(5));tab.setMaxLines(2);
+            nav.addView(tab,new LinearLayout.LayoutParams(0,dp(84),1));
             tab.setOnClickListener(v->select(index));
         }
-        root.addView(nav);
+        root.addView(nav,new LinearLayout.LayoutParams(-1,dp(84)));
+        // Keep application controls outside Android status and navigation bars.
+        root.setOnApplyWindowInsetsListener((view,insets)->{
+            int top,bottom;
+            if(Build.VERSION.SDK_INT>=30){
+                android.graphics.Insets bars=insets.getInsets(WindowInsets.Type.systemBars()|WindowInsets.Type.displayCutout());
+                top=bars.top;bottom=bars.bottom;
+            }else{
+                top=insets.getSystemWindowInsetTop();bottom=insets.getSystemWindowInsetBottom();
+            }
+            view.setPadding(0,top,0,bottom);
+            return insets;
+        });
         setContentView(root);
+        root.requestApplyInsets();
         showMap();
     }
     private void select(int index){
@@ -154,7 +176,7 @@ public class MainActivity extends Activity {
     }
     private void showSettings(){
         showPanel("Настройки");
-        page().addView(label("ЕГЕРЬ GPS • версия 1.1 (тестовая)",17,ORANGE,true));
+        page().addView(label("ЕГЕРЬ GPS • версия 1.2 (тестовая)",17,ORANGE,true));
         page().addView(label("Тёмная тема включена",15,Color.WHITE,false));
         page().addView(label("Карты: OpenStreetMap",15,Color.WHITE,false));
     }
