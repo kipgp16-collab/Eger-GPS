@@ -69,7 +69,7 @@ public class MainActivity extends Activity {
     private void showAreaInfo(int index){
         boolean publicArea=index<3;
         String owner=publicArea?"Общедоступные охотничьи угодья (по исторической схеме). Уполномоченный орган: профильное ведомство Оренбургской области; актуальное наименование требует проверки.":"Закреплённые охотничьи угодья (по исторической схеме). Название участка не подтверждает актуального правообладателя.";
-        String detail="Тип: "+(publicArea?"Общедоступные":"Закреплённые")+"\\n"+
+        String detail="Тип: "+(publicArea?"Общедоступные":"Закреплённые")+"\n"+
             "Относится: "+owner+"\\n\\n"+
             "Адрес правообладателя: не подтверждён\\n"+
             "Контактный телефон: не подтверждён\\n"+
@@ -84,7 +84,7 @@ public class MainActivity extends Activity {
         new AlertDialog.Builder(this).setTitle("Оренбургская область • охотугодья")
             .setMessage("Актуальная схема утверждена указом № 335-ук от 22.07.2026. Исторические области 2016 года не являются действующими границами.")
             .setItems(regions,(dialog,which)->{
-                if(which==0){showRegionCatalog();return;}
+                if(which==0){showAreaCatalog();return;}
                 new AlertDialog.Builder(this).setTitle("Остальные районы области")
                     .setMessage("Геометрия и сведения о правообладателях других районов пока не загружены и не проверены. Не отображаем выдуманные границы и контакты. Источник действующей схемы: указ № 335-ук от 22.07.2026.")
                     .setPositiveButton("Закрыть",null).show();
@@ -93,9 +93,7 @@ public class MainActivity extends Activity {
     private void showAreaCatalog(){
         String[] items=new String[AREAS.length];
         for(int i=0;i<AREAS.length;i++)items[i]=AREAS[i]+(i<3?" • общедоступное":" • закреплённое")+(i==0||i==1||i==3?" • есть предварительные точки":" • контур не установлен");
-        new AlertDialog.Builder(this).setTitle("Бузулукский район • 2016 (ОТМЕНЕНА)").setItems(items,(d,index)->new AlertDialog.Builder(this)
-            .setTitle(AREAS[index]).setMessage("Историческая схема 2016 года отменена. "+(index==0||index==1||index==3?"Есть предварительные контрольные точки. Демонстрационная заливка не является границей угодья.":"Проверенная геометрия отсутствует, участок присутствует только в каталоге.")+"\n\nНе использовать для определения законности охоты.")
-            .setPositiveButton("Закрыть",null).show()).setNegativeButton("Закрыть",null).show();
+        new AlertDialog.Builder(this).setTitle("Бузулукский район • 2016 (ОТМЕНЕНА)").setItems(items,(d,index)->showAreaInfo(index)).setNegativeButton("Закрыть",null).show();
     }
 
     private int dp(float value){return (int)(value*getResources().getDisplayMetrics().density+0.5f);}
@@ -239,14 +237,14 @@ public class MainActivity extends Activity {
     }
     private void showSettings(){
         showPanel("Настройки");
-        page().addView(label("ЕГЕРЬ GPS • версия 1.4.0",17,ORANGE,true));
+        page().addView(label("ЕГЕРЬ GPS • версия 1.5.1",17,ORANGE,true));
         page().addView(label("Тёмная тема включена",15,Color.WHITE,false));
         page().addView(label("Карты: OpenStreetMap",15,Color.WHITE,false));
     }
     private void showMenu(){
         String[] options={"Охотугодья Оренбургской области","Показать / скрыть исторические области","Обозначения на карте","Тип карты","Информация о приложении"};
         new AlertDialog.Builder(this).setItems(options,(d,which)->{
-            if(which==0){showAreaCatalog();return;}
+            if(which==0){showRegionCatalog();return;}
             if(which==1){historicalVisible=!historicalVisible;drawHistorical();Toast.makeText(this,historicalVisible?"Условные области включены":"Условные области скрыты",Toast.LENGTH_SHORT).show();return;}
             if(which==2)new AlertDialog.Builder(this).setTitle("Обозначения").setMessage("🟢 Общедоступные угодья\n🟠 Закреплённые угодья\n🔴 Охраняемые территории\n🔵 Моё местоположение\n📍 Мои точки\n\nЦветные области — условные, НЕ границы. Историческая схема 2016 года отменена.").setPositiveButton("Закрыть",null).show();
             if(which==3)new AlertDialog.Builder(this).setTitle("Тип карты").setItems(new String[]{"OpenStreetMap","Топографическая (позже)","Спутник (позже)"},(dialog,item)->{if(item!=0)Toast.makeText(this,"Этот слой пока недоступен",Toast.LENGTH_SHORT).show();}).show();
