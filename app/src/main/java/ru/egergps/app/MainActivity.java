@@ -59,10 +59,25 @@ public class MainActivity extends Activity {
             poly.setFillColor((colors[i]&0x00ffffff)|0x36000000);
             poly.setStrokeColor(colors[i]);poly.setStrokeWidth(dp(2));
             poly.setTitle(AREAS[i]+" • УСЛОВНАЯ ОБЛАСТЬ, НЕ ГРАНИЦА");
-            poly.setSubDescription("Историческая схема 2016 года отменена. Геометрия приблизительная, координаты не проверены. Не использовать для определения разрешённых мест охоты.");
+            poly.setSubDescription("Нажмите на участок для карточки. Историческая схема 2016 года отменена.");
+            final int areaIndex=i;
+            poly.setOnClickListener((polygon, mapView, eventPos)->{showAreaInfo(areaIndex);return true;});
             map.getOverlays().add(poly);historicalOverlays.add(poly);
         }
         map.invalidate();
+    }
+    private void showAreaInfo(int index){
+        boolean publicArea=index<3;
+        String owner=publicArea?"Общедоступные охотничьи угодья (по исторической схеме). Уполномоченный орган: профильное ведомство Оренбургской области; актуальное наименование требует проверки.":"Закреплённые охотничьи угодья (по исторической схеме). Название участка не подтверждает актуального правообладателя.";
+        String detail="Тип: "+(publicArea?"Общедоступные":"Закреплённые")+"\\n"+
+            "Относится: "+owner+"\\n\\n"+
+            "Адрес правообладателя: не подтверждён\\n"+
+            "Контактный телефон: не подтверждён\\n"+
+            "Статус: исторические сведения 2016 года, схема отменена.\\n"+
+            "Точность контура: демонстрационная, не юридическая.\\n\\n"+
+            "Не использовать для определения разрешённых мест охоты.";
+        new AlertDialog.Builder(this).setTitle("🌲 "+AREAS[index]).setMessage(detail)
+            .setPositiveButton("Закрыть",null).show();
     }
     private void showAreaCatalog(){
         String[] items=new String[AREAS.length];
