@@ -42,15 +42,14 @@ public class MainActivity extends Activity {
     private static final String[] AREAS={"ООУ № 8-1","ООУ № 8-2","ООУ № 8-3","Колтубановское","НефтьТрансСервис","Прогресс плюс","Грунино — участок № 1","Грунино — участок № 2"};
     private static final double[][][] DEMO={
         {{52.36423333,52.98528333},{52.75416667,52.74268333},{52.74096667,53.14615},{52.54371667,53.14231667},{52.44498333,53.093},{52.36441667,52.9933}},
-        {{51.83175,52.8534},{51.8377167,52.8401333},{52.066,52.8112167},{52.28695,52.8059333},{52.35365,52.8196667},{52.1833667,52.8877833},{51.83665,52.8654}},
-        {{51.92263333,52.93186667},{52.84013333,51.83771667},{52.8534,51.83175},{52.86593333,51.83663333},{52.85811667,52.15485},{51.99341667,52.9446},{51.95451667,52.95448333}}
+        {{51.83175,52.8534},{51.8377167,52.8401333},{52.066,52.8112167},{52.28695,52.8059333},{52.35365,52.8196667},{52.1833667,52.8877833},{51.83665,52.8654}}
     };
     private void drawHistorical(){
         if(map==null)return;
         for(Polygon p:historicalOverlays)map.getOverlays().remove(p);
         historicalOverlays.clear();
         if(!historicalVisible){map.invalidate();return;}
-        int[] colors={0xff3bc977,0xff54baff,0xffffab45};
+        int[] colors={0xff3bc977,0xff54baff};
         for(int i=0;i<DEMO.length;i++){
             Polygon poly=new Polygon();
             ArrayList<GeoPoint> vertices=new ArrayList<>();
@@ -80,13 +79,13 @@ public class MainActivity extends Activity {
             .setPositiveButton("Закрыть",null).show();
     }
     private void showRegionCatalog(){
-        String[] regions={"Бузулукский район • 8 исторических участков","Остальная Оренбургская область • данные уточняются"};
+        String[] regions={"Бузулукский район • 8 исторических участков","Справочник по всей области • в подготовке","Источники и точность границ"};
         new AlertDialog.Builder(this).setTitle("Оренбургская область • охотугодья")
             .setMessage("Актуальная схема утверждена указом № 335-ук от 22.07.2026. Исторические области 2016 года не являются действующими границами.")
             .setItems(regions,(dialog,which)->{
                 if(which==0){showAreaCatalog();return;}
-                new AlertDialog.Builder(this).setTitle("Остальные районы области")
-                    .setMessage("Геометрия и сведения о правообладателях других районов пока не загружены и не проверены. Не отображаем выдуманные границы и контакты. Источник действующей схемы: указ № 335-ук от 22.07.2026.")
+                new AlertDialog.Builder(this).setTitle(which==1?"Справочник области":"Источники и точность")
+                    .setMessage(which==1?"Справочник охотугодий всех районов Оренбургской области готовится. До проверки данных не показываем вымышленные хозяйства и контакты.":"Карта охотника (huntmap.ru) — источник для сверки, не для неразрешённого копирования геоданных. Действующую схему необходимо сверять с официальными документами. Цветные области Бузулукского района — условная историческая демонстрация.")
                     .setPositiveButton("Закрыть",null).show();
             }).setNegativeButton("Закрыть",null).show();
     }
@@ -189,7 +188,7 @@ public class MainActivity extends Activity {
         FrameLayout.LayoutParams sideParams=new FrameLayout.LayoutParams(dp(48),-2,Gravity.RIGHT|Gravity.CENTER_VERTICAL);
         sideParams.rightMargin=dp(12);body.addView(side,sideParams);
         LinearLayout bottom=vertical();bottom.setBackgroundColor(PANEL);
-        message=label("⚠ 2016: схема отменена • области условные, НЕ границы",12,0xffffd18b,true);
+        message=label("⚠ Оренбургская область • проверенные границы ещё не загружены",12,0xffffd18b,true);
         message.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Предупреждение").setMessage("Отображаемые цветные области — демонстрационные оболочки предварительных точек, а не границы охотугодий. Схема 2016 года отменена. Не используйте карту для определения законности охоты.").setPositiveButton("Понятно",null).show());
         bottom.addView(message);
         LinearLayout buttons=horizontal();
@@ -237,7 +236,7 @@ public class MainActivity extends Activity {
     }
     private void showSettings(){
         showPanel("Настройки");
-        page().addView(label("ЕГЕРЬ GPS • версия 1.5.1",17,ORANGE,true));
+        page().addView(label("ЕГЕРЬ GPS • версия 1.5.2",17,ORANGE,true));
         page().addView(label("Тёмная тема включена",15,Color.WHITE,false));
         page().addView(label("Карты: OpenStreetMap",15,Color.WHITE,false));
     }
