@@ -1,0 +1,41 @@
+{
+  "project": "ЕГЕРЬ GPS",
+  "target_version": "1.5.3",
+  "region": "Оренбургская область",
+  "crs": "EPSG:4326",
+  "current_legal_basis": {
+    "act": "Указ губернатора Оренбургской области №335-ук от 22.07.2026",
+    "effective": "2026-07-31",
+    "url": "https://base.garant.ru/414681288/",
+    "geometry_status": "not_acquired"
+  },
+  "historic_basis": {
+    "act": "Указ №8-ук от 18.01.2016 (утратил силу)",
+    "url": "https://orenb-gov.ru/doc/44821",
+    "allowed_layer": "historic_only"
+  },
+  "candidate_data_sources": [
+    {
+      "url": "https://base.garant.ru/414681288/5633a92d35b966c2ba2f1e859e7bdd69/",
+      "status": "full appendix not publicly provided in this source"
+    },
+    {
+      "url": "https://orenb-gov.ru/doc/44820",
+      "status": "historical textual boundary descriptions, not current geometry"
+    },
+    {
+      "url": "https://huntmap.ru/",
+      "status": "third-party map; require permission or license before reusing polygons"
+    }
+  ],
+  "geometry_features": [],
+  "coverage_status": "no verified current polygons imported",
+  "import_requirements": [
+    "obtain official 2026 vector geometry SHP GeoJSON GPKG or KML",
+    "verify geometry validity, CRS and legal date",
+    "preserve provenance per polygon",
+    "never present historic or approximated polygons as current",
+    "add polygon names and verified contacts only"
+  ],
+  "note": "Do not use this metadata manifest as polygon GeoJSON."
+}
