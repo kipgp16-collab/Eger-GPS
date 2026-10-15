@@ -80,17 +80,17 @@ public class MainActivity extends Activity {
             .setPositiveButton("Закрыть",null).show();
     }
     private void showRegionCatalog(){
-        String[] regions={"Бузулукский район • 8 исторических участков","Справочник по всей области • в подготовке","Источники и точность границ"};
+        String[] regions={"Открыть полную карту охотугодий (Карта охотника)","Бузулукский район • 8 исторических участков","Справочник по всей области • в подготовке","Источники и точность границ"};
         new AlertDialog.Builder(this).setTitle("Оренбургская область • охотугодья")
             .setMessage("Выбран архивный картографический слой 2016 года. Он не является действующей схемой 2026 года и предназначен только для справки.")
             .setItems(regions,(dialog,which)->{
-                if(which==0){showAreaCatalog();return;}
-                new AlertDialog.Builder(this).setTitle(which==1?"Справочник области":"Источники и точность")
-                    .setMessage(which==1?"Для наполнения исторической карты используем описания ЗОУ, ООУ и ПОУ из приложений А, Б, Г к указу № 8-ук (2016). Геометрия по всем районам ещё не оцифрована. До проверки данных не показываем вымышленные хозяйства и контакты.":"Карта охотника (huntmap.ru) — источник для сверки, не для неразрешённого копирования геоданных. Действующую схему необходимо сверять с официальными документами. Цветные области Бузулукского района — условная историческая демонстрация.")
+                if(which==0){openHuntMap();return;}\n                if(which==1){showAreaCatalog();return;}
+                new AlertDialog.Builder(this).setTitle(which==2?"Справочник области":"Источники и точность")
+                    .setMessage(which==2?"Для наполнения исторической карты используем описания ЗОУ, ООУ и ПОУ из приложений А, Б, Г к указу № 8-ук (2016). Геометрия по всем районам ещё не оцифрована. До проверки данных не показываем вымышленные хозяйства и контакты.":"Карта охотника (huntmap.ru) — источник для сверки, не для неразрешённого копирования геоданных. Действующую схему необходимо сверять с официальными документами. Цветные области Бузулукского района — условная историческая демонстрация.")
                     .setPositiveButton("Закрыть",null).show();
             }).setNegativeButton("Закрыть",null).show();
     }
-    private void showAreaCatalog(){
+    private void openHuntMap(){\n        new AlertDialog.Builder(this).setTitle("Карта охотника • вся область")\n            .setMessage("Открыть интерактивную карту охотугодий Оренбургской области на сайте правообладателя? Нужен интернет. Данные стороннего сервиса не копируются в ЕГЕРЬ GPS. Карта основана на исторической схеме 2016 года и последующих изменениях, не на действующей схеме 2026 года.")\n            .setNegativeButton("Отмена",null)\n            .setPositiveButton("Открыть", (d,w)->{\n                android.content.Intent intent=new android.content.Intent(android.content.Intent.ACTION_VIEW,android.net.Uri.parse("https://huntmap.ru/karta-oxotnichix-ugodij-orenburgskoj-oblasti-obzor"));\n                try{startActivity(intent);}catch(Exception ex){Toast.makeText(this,"Не удалось открыть карту",Toast.LENGTH_LONG).show();}\n            }).show();\n    }\n    private void showAreaCatalog(){
         String[] items=new String[AREAS.length];
         for(int i=0;i<AREAS.length;i++)items[i]=AREAS[i]+(i<3?" • общедоступное":" • закреплённое")+(i==0||i==1||i==3?" • есть предварительные точки":" • контур не установлен");
         new AlertDialog.Builder(this).setTitle("Бузулукский район • 2016 (ОТМЕНЕНА)").setItems(items,(d,index)->showAreaInfo(index)).setNegativeButton("Закрыть",null).show();
@@ -242,13 +242,13 @@ public class MainActivity extends Activity {
         page().addView(label("Карты: OpenStreetMap",15,Color.WHITE,false));
     }
     private void showMenu(){
-        String[] options={"Охотугодья Оренбургской области","Показать / скрыть исторические области","Обозначения на карте","Тип карты","Информация о приложении"};
+        String[] options={"Охотугодья Оренбургской области","Полная карта 2016 • онлайн","Показать / скрыть исторические области","Обозначения на карте","Тип карты","Информация о приложении"};
         new AlertDialog.Builder(this).setItems(options,(d,which)->{
             if(which==0){showRegionCatalog();return;}
-            if(which==1){historicalVisible=!historicalVisible;drawHistorical();Toast.makeText(this,historicalVisible?"Условные области включены":"Условные области скрыты",Toast.LENGTH_SHORT).show();return;}
-            if(which==2)new AlertDialog.Builder(this).setTitle("Обозначения").setMessage("🟢 Общедоступные угодья\n🟠 Закреплённые угодья\n🔴 Охраняемые территории\n🔵 Моё местоположение\n📍 Мои точки\n\nПока цветные области — условные, НЕ границы. Выбран архивный источник 2016 года, недействующий с 2026 года.").setPositiveButton("Закрыть",null).show();
-            if(which==3)new AlertDialog.Builder(this).setTitle("Тип карты").setItems(new String[]{"OpenStreetMap","Топографическая (позже)","Спутник (позже)"},(dialog,item)->{if(item!=0)Toast.makeText(this,"Этот слой пока недоступен",Toast.LENGTH_SHORT).show();}).show();
-            if(which==4)showSettings();
+            if(which==1){openHuntMap();return;}\n            if(which==2){historicalVisible=!historicalVisible;drawHistorical();Toast.makeText(this,historicalVisible?"Условные области включены":"Условные области скрыты",Toast.LENGTH_SHORT).show();return;}
+            if(which==3)new AlertDialog.Builder(this).setTitle("Обозначения").setMessage("🟢 Общедоступные угодья\n🟠 Закреплённые угодья\n🔴 Охраняемые территории\n🔵 Моё местоположение\n📍 Мои точки\n\nПока цветные области — условные, НЕ границы. Выбран архивный источник 2016 года, недействующий с 2026 года.").setPositiveButton("Закрыть",null).show();
+            if(which==4)new AlertDialog.Builder(this).setTitle("Тип карты").setItems(new String[]{"OpenStreetMap","Топографическая (позже)","Спутник (позже)"},(dialog,item)->{if(item!=0)Toast.makeText(this,"Этот слой пока недоступен",Toast.LENGTH_SHORT).show();}).show();
+            if(which==5)showSettings();
         }).show();
     }
     private void addPoint(){
