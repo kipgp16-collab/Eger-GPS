@@ -176,7 +176,7 @@ public class MainActivity extends Activity {
     }
     private void showSettings(){
         showPanel("Настройки");
-        page().addView(label("ЕГЕРЬ GPS • версия 1.2 (тестовая)",17,ORANGE,true));
+        page().addView(label("ЕГЕРЬ GPS • версия 1.3.1",17,ORANGE,true));
         page().addView(label("Тёмная тема включена",15,Color.WHITE,false));
         page().addView(label("Карты: OpenStreetMap",15,Color.WHITE,false));
     }
