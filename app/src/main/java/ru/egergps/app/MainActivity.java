@@ -45,6 +45,40 @@ public class MainActivity extends Activity {
         {{51.83175,52.8534},{51.8377167,52.8401333},{52.066,52.8112167},{52.28695,52.8059333},{52.35365,52.8196667},{52.1833667,52.8877833},{51.83665,52.8654}},
         {{51.72115,54.5703833},{51.73125,54.6143833},{51.70355,54.6093},{51.6970667,54.594},{51.70875,54.5824}}
     };
+    private void drawImportedHistorical(){
+        try(java.io.InputStream input=getAssets().open("orenburg-2016-approx.geojson")){
+            java.io.ByteArrayOutputStream bytes=new java.io.ByteArrayOutputStream();
+            byte[] buf=new byte[8192];int n;
+            while((n=input.read(buf))!=-1)bytes.write(buf,0,n);
+            org.json.JSONObject root=new org.json.JSONObject(bytes.toString("UTF-8"));
+            org.json.JSONArray features=root.getJSONArray("features");
+            for(int i=0;i<features.length();i++){
+                org.json.JSONObject feature=features.getJSONObject(i);
+                org.json.JSONObject geometry=feature.getJSONObject("geometry");
+                if(!"Polygon".equals(geometry.optString("type")))continue;
+                org.json.JSONArray rings=geometry.getJSONArray("coordinates");
+                if(rings.length()==0)continue;
+                org.json.JSONArray ring=rings.getJSONArray(0);
+                ArrayList<GeoPoint> vertices=new ArrayList<>();
+                for(int j=0;j<ring.length();j++){
+                    org.json.JSONArray xy=ring.getJSONArray(j);
+                    vertices.add(new GeoPoint(xy.getDouble(1),xy.getDouble(0)));
+                }
+                if(vertices.size()<3)continue;
+                org.json.JSONObject properties=feature.optJSONObject("properties");
+                String name=properties==null?"Участок":properties.optString("name","Участок");
+                Polygon poly=new Polygon();poly.setPoints(vertices);
+                poly.setStrokeColor(0xffffae42);poly.setStrokeWidth(dp(2));
+                poly.setFillColor(0x33ffae42);
+                poly.setTitle(name+" • АРХИВ 2016 • ПРИБЛИЗИТЕЛЬНО");
+                poly.setSubDescription("Контур ориентировочный, не определяет разрешённые места охоты.");
+                poly.setOnClickListener((polygon,mapView,eventPos)->{
+                    new AlertDialog.Builder(this).setTitle(name).setMessage("Архивная схема 2016 года. Приблизительная граница; не использовать для определения законности охоты.").setPositiveButton("Закрыть",null).show();return true;
+                });
+                map.getOverlays().add(poly);historicalOverlays.add(poly);
+            }
+        }catch(Exception e){android.util.Log.w("EgerGPS","Historical GeoJSON not loaded",e);}
+    }
     private void drawHistorical(){
         if(map==null)return;
         for(Polygon p:historicalOverlays)map.getOverlays().remove(p);
@@ -64,6 +98,7 @@ public class MainActivity extends Activity {
             poly.setOnClickListener((polygon, mapView, eventPos)->{showAreaInfo(areaIndex);return true;});
             map.getOverlays().add(poly);historicalOverlays.add(poly);
         }
+        drawImportedHistorical();
         map.invalidate();
     }
     private void showAreaInfo(int index){
