@@ -7,8 +7,25 @@ android {
         applicationId = "ru.egergps.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3
-        versionName = "1.2.0-alpha"
+        versionCode = 4
+        versionName = "1.3.0"
+    }
+    signingConfigs {
+        create("production") {
+            val path = System.getenv("EGER_KEYSTORE_PATH")
+            if (!path.isNullOrBlank()) {
+                storeFile = file(path)
+                storePassword = System.getenv("EGER_STORE_PASSWORD")
+                keyAlias = System.getenv("EGER_KEY_ALIAS")
+                keyPassword = System.getenv("EGER_KEY_PASSWORD")
+            }
+        }
+    }
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("production")
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
