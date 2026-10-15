@@ -1,6 +1,8 @@
 name: Android APK
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
 jobs:
   build:
     runs-on: ubuntu-24.04
@@ -12,18 +14,33 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Check preinstalled Android SDK
-        run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          test -d "$ANDROID_HOME"
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: Build debug APK
-        run: gradle --no-daemon assembleDebug
-      - name: Upload APK
+      - name: Restore private signing keystore
+        env:
+          KEYSTORE_B64: ${{ secrets.EGER_KEYSTORE_B64 }}
+        run: |
+          test -n "$KEYSTORE_B64" || { echo "Missing keystore secret"; exit 1; }
+          printf '%s' "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/eger-release.jks"
+          test -s "$RUNNER_TEMP/eger-release.jks"
+          echo "EGER_KEYSTORE_PATH=$RUNNER_TEMP/eger-release.jks" >> "$GITHUB_ENV"
+      - name: Build signed release APK
+        env:
+          EGER_STORE_PASSWORD: ${{ secrets.EGER_STORE_PASSWORD }}
+          EGER_KEY_ALIAS: ${{ secrets.EGER_KEY_ALIAS }}
+          EGER_KEY_PASSWORD: ${{ secrets.EGER_KEY_PASSWORD }}
+        run: |
+          test -n "$EGER_STORE_PASSWORD" && test -n "$EGER_KEY_ALIAS" && test -n "$EGER_KEY_PASSWORD"
+          gradle --no-daemon assembleRelease
+      - name: Verify signed APK
+        run: |
+          APK=$(find app/build/outputs/apk/release -name '*.apk' -type f | head -1)
+          test -n "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$APK"
+      - name: Upload signed APK
         uses: actions/upload-artifact@v4
         with:
-          name: EgerGPS-debug
-          path: app/build/outputs/apk/debug/*.apk
-          retention-days: 3
+          name: EgerGPS-1.3-signed-release
+          path: app/build/outputs/apk/release/*.apk
+          retention-days: 14
