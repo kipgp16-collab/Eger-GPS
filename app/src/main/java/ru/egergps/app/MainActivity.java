@@ -79,6 +79,17 @@ public class MainActivity extends Activity {
         new AlertDialog.Builder(this).setTitle("🌲 "+AREAS[index]).setMessage(detail)
             .setPositiveButton("Закрыть",null).show();
     }
+    private void showRegionCatalog(){
+        String[] regions={"Бузулукский район • 8 исторических участков","Остальная Оренбургская область • данные уточняются"};
+        new AlertDialog.Builder(this).setTitle("Оренбургская область • охотугодья")
+            .setMessage("Актуальная схема утверждена указом № 335-ук от 22.07.2026. Исторические области 2016 года не являются действующими границами.")
+            .setItems(regions,(dialog,which)->{
+                if(which==0){showRegionCatalog();return;}
+                new AlertDialog.Builder(this).setTitle("Остальные районы области")
+                    .setMessage("Геометрия и сведения о правообладателях других районов пока не загружены и не проверены. Не отображаем выдуманные границы и контакты. Источник действующей схемы: указ № 335-ук от 22.07.2026.")
+                    .setPositiveButton("Закрыть",null).show();
+            }).setNegativeButton("Закрыть",null).show();
+    }
     private void showAreaCatalog(){
         String[] items=new String[AREAS.length];
         for(int i=0;i<AREAS.length;i++)items[i]=AREAS[i]+(i<3?" • общедоступное":" • закреплённое")+(i==0||i==1||i==3?" • есть предварительные точки":" • контур не установлен");
@@ -233,7 +244,7 @@ public class MainActivity extends Activity {
         page().addView(label("Карты: OpenStreetMap",15,Color.WHITE,false));
     }
     private void showMenu(){
-        String[] options={"Угодья Бузулукского района (2016)","Показать / скрыть исторические области","Обозначения на карте","Тип карты","Информация о приложении"};
+        String[] options={"Охотугодья Оренбургской области","Показать / скрыть исторические области","Обозначения на карте","Тип карты","Информация о приложении"};
         new AlertDialog.Builder(this).setItems(options,(d,which)->{
             if(which==0){showAreaCatalog();return;}
             if(which==1){historicalVisible=!historicalVisible;drawHistorical();Toast.makeText(this,historicalVisible?"Условные области включены":"Условные области скрыты",Toast.LENGTH_SHORT).show();return;}
