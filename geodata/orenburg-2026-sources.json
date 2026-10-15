@@ -26,6 +26,16 @@
     {
       "url": "https://huntmap.ru/",
       "status": "third-party map; require permission or license before reusing polygons"
+    },
+    {
+      "url": "https://geois.orb.ru/extensions/geojson",
+      "status": "official regional geodata portal; GeoJSON export exists for regional and district boundaries, not yet verified hunting-ground polygons",
+      "type": "regional_basemap"
+    },
+    {
+      "url": "https://www.ohota64.ru/map/",
+      "status": "additional interactive hunting map with hunting-ground layers; export/license and update date not verified",
+      "type": "candidate_hunting_map"
     }
   ],
   "geometry_features": [],
@@ -37,5 +47,7 @@
     "never present historic or approximated polygons as current",
     "add polygon names and verified contacts only"
   ],
-  "note": "Do not use this metadata manifest as polygon GeoJSON."
+  "note": "Do not use this metadata manifest as polygon GeoJSON.",
+  "source_discovery_date": "2026-10-15",
+  "huntmap_age_warning": "huntmap.ru Orenburg map explicitly states underlying 2016 scheme, now repealed"
 }
