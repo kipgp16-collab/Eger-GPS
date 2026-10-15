@@ -57,7 +57,7 @@ public class MainActivity extends Activity {
             poly.setPoints(vertices);
             poly.setFillColor((colors[i]&0x00ffffff)|0x36000000);
             poly.setStrokeColor(colors[i]);poly.setStrokeWidth(dp(2));
-            poly.setTitle(AREAS[i]+" • УСЛОВНАЯ ОБЛАСТЬ, НЕ ГРАНИЦА");
+            poly.setTitle(AREAS[i]+" • ПРИБЛИЗИТЕЛЬНЫЙ КОНТУР");
             poly.setSubDescription("Нажмите на участок для карточки. Основа карты — архивная схема 2016 года (недействующая).");
             final int areaIndex=i;
             poly.setOnClickListener((polygon, mapView, eventPos)->{showAreaInfo(areaIndex);return true;});
@@ -73,7 +73,7 @@ public class MainActivity extends Activity {
             "Адрес правообладателя: не подтверждён\n"+
             "Контактный телефон: не подтверждён\n"+
             "Статус: исторические сведения 2016 года, схема отменена.\n"+
-            "Точность контура: демонстрационная, не юридическая.\n\n"+
+            "Точность контура: приблизительная, линии соединяют имеющиеся точки; не юридическая.\n\n"+
             "Не использовать для определения разрешённых мест охоты.";
         new AlertDialog.Builder(this).setTitle("🌲 "+AREAS[index]).setMessage(detail)
             .setPositiveButton("Закрыть",null).show();
@@ -188,7 +188,7 @@ public class MainActivity extends Activity {
         FrameLayout.LayoutParams sideParams=new FrameLayout.LayoutParams(dp(48),-2,Gravity.RIGHT|Gravity.CENTER_VERTICAL);
         sideParams.rightMargin=dp(12);body.addView(side,sideParams);
         LinearLayout bottom=vertical();bottom.setBackgroundColor(PANEL);
-        message=label("⚠ Архивная схема 2016 • пока показаны 2 условных контура",12,0xffffd18b,true);
+        message=label("⚠ Архив 2016 • 2 приблизительных контура • НЕ для определения границ",12,0xffffd18b,true);
         message.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Предупреждение").setMessage("Выбрана историческая схема 2016 года, утратившая силу. Пока доступны только 2 демонстрационных контура. Это НЕ точные границы охотугодий. Не используйте карту для определения законности охоты. Не используйте карту для определения законности охоты.").setPositiveButton("Понятно",null).show());
         bottom.addView(message);
         LinearLayout buttons=horizontal();
