@@ -37,7 +37,9 @@ public class MainActivity extends Activity {
     private final ArrayList<GeoPoint> points=new ArrayList<>();
     private final ArrayList<String> names=new ArrayList<>();
     private boolean tracking=false;
-    private boolean historicalVisible=true;
+    private boolean historicalVisible=false;
+    private boolean bashMarkersVisible=true;
+    private final ArrayList<Marker> bashMarkers=new ArrayList<>();
     private final ArrayList<Polygon> historicalOverlays=new ArrayList<>();
     private static final String[] AREAS={"ООУ № 8-1","ООУ № 8-2","ООУ № 8-3","Колтубановское","НефтьТрансСервис","Прогресс плюс","Грунино — участок № 1","Грунино — участок № 2","Фрегат (ориентировочно)"};
     private static final double[][][] DEMO={
@@ -45,6 +47,45 @@ public class MainActivity extends Activity {
         {{51.83175,52.8534},{51.8377167,52.8401333},{52.066,52.8112167},{52.28695,52.8059333},{52.35365,52.8196667},{52.1833667,52.8877833},{51.83665,52.8654}},
         {{51.72115,54.5703833},{51.73125,54.6143833},{51.70355,54.6093},{51.6970667,54.594},{51.70875,54.5824}}
     };
+
+    private static final String[] BASH_PLACES={"Гавриловка","Златоустовка","Новояушево","Новософиевка","Михайловка","Маломусино","Новомусино","Лена","Таймасово"};
+    private static final double[][] BASH_COORDS={{53.20666667,55.57185},{53.15043333,55.49168333},{53.03648333,55.37358333},{53.00701667,55.34251667},{52.93505,55.28701667},{52.85115,55.7427},{52.8251,55.67371667},{52.8011,55.60055},{52.7895,55.46715}};
+    private void drawBashMarkers(){
+        if(map==null)return;
+        for(Marker m:bashMarkers)map.getOverlays().remove(m);
+        bashMarkers.clear();
+        if(!bashMarkersVisible){map.invalidate();return;}
+        for(int i=0;i<BASH_PLACES.length;i++){
+            final int index=i;
+            Marker marker=new Marker(map);
+            marker.setPosition(new GeoPoint(BASH_COORDS[i][0],BASH_COORDS[i][1]));
+            marker.setTitle(BASH_PLACES[i]+" • "+(i<5?"Фёдоровский":"Куюргазинский")+" район");
+            marker.setSubDescription("GPS-ориентир из описания охотугодий. НЕ граница охотугодья.");
+            marker.setAnchor(Marker.ANCHOR_CENTER,Marker.ANCHOR_BOTTOM);
+            marker.setOnMarkerClickListener((m,mapView)->{
+                new AlertDialog.Builder(this).setTitle("📍 "+BASH_PLACES[index])
+                    .setMessage((index<5?"Фёдоровский район • Охотник Федоровского района":"Куюргазинский район • Урай")+"\\nКоординаты: "+String.format(Locale.US,"%.6f, %.6f",BASH_COORDS[index][0],BASH_COORDS[index][1])+"\\n\\nЭто ориентир, не проверенная граница. Не использовать для определения разрешённых мест охоты.")
+                    .setPositiveButton("Закрыть",null).show();
+                return true;
+            });
+            map.getOverlays().add(marker);bashMarkers.add(marker);
+        }
+        map.invalidate();
+    }
+    private void showBashCatalog(){
+        String[] items={"Фёдоровский • ООО «Охотник Федоровского района» • 117 248 га",
+            "Фёдоровский • МОО «ООиР г. Салавата» • 15 893 га",
+            "Фёдоровский • общедоступные угодья • 34 387 га",
+            "Куюргазинский • РОО «Ассоциация ОиР РБ» • 151 437 га",
+            "Куюргазинский • ООО «ОХ Урай» • 52 106 га",
+            "Куюргазинский • общедоступные угодья • 8 344 га"};
+        new AlertDialog.Builder(this).setTitle("Башкортостан • справочник угодий")
+            .setMessage("6 записей • 9 ориентиров. Полные границы ещё не оцифрованы.")
+            .setItems(items,(d,i)->new AlertDialog.Builder(this).setTitle(items[i]).setMessage("Справочная площадь по опубликованной схеме. Точный контур отсутствует; GPS-ориентиры не являются границами.").setPositiveButton("Понятно",null).show())
+            .setPositiveButton("На карту", (d,w)->{showMap();map.getController().animateTo(new GeoPoint(53.02,55.48));map.getController().setZoom(10.0);})
+            .setNegativeButton("Закрыть",null).show();
+    }
+
     private void drawImportedHistorical(){
         try(java.io.InputStream input=getAssets().open("orenburg-2016-approx.geojson")){
             java.io.ByteArrayOutputStream bytes=new java.io.ByteArrayOutputStream();
@@ -213,12 +254,13 @@ public class MainActivity extends Activity {
             map.setTileSource(TileSourceFactory.MAPNIK);
             map.setMultiTouchControls(true);
             map.getController().setZoom(8.0);
-            map.getController().setCenter(new GeoPoint(52.0,55.5));
+            map.getController().setCenter(new GeoPoint(53.02,55.48));
         }else if(map.getParent() instanceof android.view.ViewGroup){
             ((android.view.ViewGroup)map.getParent()).removeView(map);
         }
         body.addView(map,new FrameLayout.LayoutParams(-1,-1));
         drawHistorical();
+        drawBashMarkers();
         LinearLayout side=vertical();side.setBackgroundColor(PANEL);
         String[] actions={"➤","+","−","⊙"};
         for(int i=0;i<actions.length;i++){
@@ -234,7 +276,7 @@ public class MainActivity extends Activity {
         FrameLayout.LayoutParams sideParams=new FrameLayout.LayoutParams(dp(48),-2,Gravity.RIGHT|Gravity.CENTER_VERTICAL);
         sideParams.rightMargin=dp(12);body.addView(side,sideParams);
         LinearLayout bottom=vertical();bottom.setBackgroundColor(PANEL);
-        message=label("⚠ Архив 2016 • 3 приблизительных контура • НЕ для определения границ",12,0xffffd18b,true);
+        message=label("📍 Башкортостан • 9 ориентиров • границы не установлены",12,0xffffd18b,true);
         message.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Предупреждение").setMessage("Выбрана историческая схема 2016 года, утратившая силу. Пока доступны только 2 демонстрационных контура. Это НЕ точные границы охотугодий. Не используйте карту для определения законности охоты. Не используйте карту для определения законности охоты.").setPositiveButton("Понятно",null).show());
         bottom.addView(message);
         LinearLayout buttons=horizontal();
@@ -282,19 +324,21 @@ public class MainActivity extends Activity {
     }
     private void showSettings(){
         showPanel("Настройки");
-        page().addView(label("ЕГЕРЬ GPS • версия 1.5.3",17,ORANGE,true));
+        page().addView(label("ЕГЕРЬ GPS • Башкортостан • 1.5.4",17,ORANGE,true));
         page().addView(label("Тёмная тема включена",15,Color.WHITE,false));
         page().addView(label("Карты: OpenStreetMap",15,Color.WHITE,false));
     }
     private void showMenu(){
-        String[] options={"Охотугодья Оренбургской области","Полная карта 2016 • онлайн","Показать / скрыть исторические области","Обозначения на карте","Тип карты","Информация о приложении"};
+        String[] options={"Охотугодья Башкортостана","Показать / скрыть ориентиры Башкортостана","Охотугодья Оренбургской области","Полная карта 2016 • онлайн","Показать / скрыть исторические области","Обозначения на карте","Тип карты","Информация о приложении"};
         new AlertDialog.Builder(this).setItems(options,(d,which)->{
-            if(which==0){showRegionCatalog();return;}
-            if(which==1){openHuntMap();return;}
-            if(which==2){historicalVisible=!historicalVisible;drawHistorical();Toast.makeText(this,historicalVisible?"Условные области включены":"Условные области скрыты",Toast.LENGTH_SHORT).show();return;}
-            if(which==3)new AlertDialog.Builder(this).setTitle("Обозначения").setMessage("🟢 Общедоступные угодья\n🟠 Закреплённые угодья\n🔴 Охраняемые территории\n🔵 Моё местоположение\n📍 Мои точки\n\nПока цветные области — условные, НЕ границы. Выбран архивный источник 2016 года, недействующий с 2026 года.").setPositiveButton("Закрыть",null).show();
-            if(which==4)new AlertDialog.Builder(this).setTitle("Тип карты").setItems(new String[]{"OpenStreetMap","Топографическая (позже)","Спутник (позже)"},(dialog,item)->{if(item!=0)Toast.makeText(this,"Этот слой пока недоступен",Toast.LENGTH_SHORT).show();}).show();
-            if(which==5)showSettings();
+            if(which==0){showBashCatalog();return;}
+            if(which==1){bashMarkersVisible=!bashMarkersVisible;drawBashMarkers();Toast.makeText(this,bashMarkersVisible?"Ориентиры включены":"Ориентиры скрыты",Toast.LENGTH_SHORT).show();return;}
+            if(which==2){showRegionCatalog();return;}
+            if(which==3){openHuntMap();return;}
+            if(which==4){historicalVisible=!historicalVisible;drawHistorical();Toast.makeText(this,historicalVisible?"Условные области включены":"Условные области скрыты",Toast.LENGTH_SHORT).show();return;}
+            if(which==5)new AlertDialog.Builder(this).setTitle("Обозначения").setMessage("🟢 Общедоступные угодья\n🟠 Закреплённые угодья\n🔴 Охраняемые территории\n🔵 Моё местоположение\n📍 Мои точки\n\nПока цветные области — условные, НЕ границы. Выбран архивный источник 2016 года, недействующий с 2026 года.").setPositiveButton("Закрыть",null).show();
+            if(which==6)new AlertDialog.Builder(this).setTitle("Тип карты").setItems(new String[]{"OpenStreetMap","Топографическая (позже)","Спутник (позже)"},(dialog,item)->{if(item!=0)Toast.makeText(this,"Этот слой пока недоступен",Toast.LENGTH_SHORT).show();}).show();
+            if(which==7)showSettings();
         }).show();
     }
     private void addPoint(){
