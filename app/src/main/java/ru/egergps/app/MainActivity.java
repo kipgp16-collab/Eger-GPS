@@ -39,17 +39,18 @@ public class MainActivity extends Activity {
     private boolean tracking=false;
     private boolean historicalVisible=true;
     private final ArrayList<Polygon> historicalOverlays=new ArrayList<>();
-    private static final String[] AREAS={"ООУ № 8-1","ООУ № 8-2","ООУ № 8-3","Колтубановское","НефтьТрансСервис","Прогресс плюс","Грунино — участок № 1","Грунино — участок № 2"};
+    private static final String[] AREAS={"ООУ № 8-1","ООУ № 8-2","ООУ № 8-3","Колтубановское","НефтьТрансСервис","Прогресс плюс","Грунино — участок № 1","Грунино — участок № 2","Фрегат (ориентировочно)"};
     private static final double[][][] DEMO={
         {{52.36423333,52.98528333},{52.75416667,52.74268333},{52.74096667,53.14615},{52.54371667,53.14231667},{52.44498333,53.093},{52.36441667,52.9933}},
-        {{51.83175,52.8534},{51.8377167,52.8401333},{52.066,52.8112167},{52.28695,52.8059333},{52.35365,52.8196667},{52.1833667,52.8877833},{51.83665,52.8654}}
+        {{51.83175,52.8534},{51.8377167,52.8401333},{52.066,52.8112167},{52.28695,52.8059333},{52.35365,52.8196667},{52.1833667,52.8877833},{51.83665,52.8654}},
+        {{51.72115,54.5703833},{51.73125,54.6143833},{51.70355,54.6093},{51.6970667,54.594},{51.70875,54.5824}}
     };
     private void drawHistorical(){
         if(map==null)return;
         for(Polygon p:historicalOverlays)map.getOverlays().remove(p);
         historicalOverlays.clear();
         if(!historicalVisible){map.invalidate();return;}
-        int[] colors={0xff3bc977,0xff54baff};
+        int[] colors={0xff3bc977,0xff54baff,0xffffa640};
         for(int i=0;i<DEMO.length;i++){
             Polygon poly=new Polygon();
             ArrayList<GeoPoint> vertices=new ArrayList<>();
@@ -188,7 +189,7 @@ public class MainActivity extends Activity {
         FrameLayout.LayoutParams sideParams=new FrameLayout.LayoutParams(dp(48),-2,Gravity.RIGHT|Gravity.CENTER_VERTICAL);
         sideParams.rightMargin=dp(12);body.addView(side,sideParams);
         LinearLayout bottom=vertical();bottom.setBackgroundColor(PANEL);
-        message=label("⚠ Архив 2016 • 2 приблизительных контура • НЕ для определения границ",12,0xffffd18b,true);
+        message=label("⚠ Архив 2016 • 3 приблизительных контура • НЕ для определения границ",12,0xffffd18b,true);
         message.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Предупреждение").setMessage("Выбрана историческая схема 2016 года, утратившая силу. Пока доступны только 2 демонстрационных контура. Это НЕ точные границы охотугодий. Не используйте карту для определения законности охоты. Не используйте карту для определения законности охоты.").setPositiveButton("Понятно",null).show());
         bottom.addView(message);
         LinearLayout buttons=horizontal();
