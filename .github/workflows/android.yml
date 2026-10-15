@@ -38,9 +38,17 @@ jobs:
           APK=$(find app/build/outputs/apk/release -name '*.apk' -type f | head -1)
           test -n "$APK"
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$APK"
+      - name: Name APK using actual application version
+        run: |
+          VERSION=$(sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' app/build.gradle.kts | head -1)
+          test -n "$VERSION" || { echo "Missing versionName"; exit 1; }
+          APK=$(find app/build/outputs/apk/release -name '*.apk' -type f | head -1)
+          test -n "$APK"
+          mv "$APK" "app/build/outputs/apk/release/EgerGPS-v${VERSION}.apk"
+          echo "APK_VERSION=$VERSION" >> "$GITHUB_ENV"
       - name: Upload signed APK
         uses: actions/upload-artifact@v4
         with:
-          name: EgerGPS-1.3-signed-release
+          name: EgerGPS-v${{ env.APK_VERSION }}-signed-release
           path: app/build/outputs/apk/release/*.apk
           retention-days: 14
