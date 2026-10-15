@@ -58,7 +58,7 @@ public class MainActivity extends Activity {
             poly.setFillColor((colors[i]&0x00ffffff)|0x36000000);
             poly.setStrokeColor(colors[i]);poly.setStrokeWidth(dp(2));
             poly.setTitle(AREAS[i]+" • УСЛОВНАЯ ОБЛАСТЬ, НЕ ГРАНИЦА");
-            poly.setSubDescription("Нажмите на участок для карточки. Историческая схема 2016 года отменена.");
+            poly.setSubDescription("Нажмите на участок для карточки. Основа карты — архивная схема 2016 года (недействующая).");
             final int areaIndex=i;
             poly.setOnClickListener((polygon, mapView, eventPos)->{showAreaInfo(areaIndex);return true;});
             map.getOverlays().add(poly);historicalOverlays.add(poly);
@@ -81,11 +81,11 @@ public class MainActivity extends Activity {
     private void showRegionCatalog(){
         String[] regions={"Бузулукский район • 8 исторических участков","Справочник по всей области • в подготовке","Источники и точность границ"};
         new AlertDialog.Builder(this).setTitle("Оренбургская область • охотугодья")
-            .setMessage("Актуальная схема утверждена указом № 335-ук от 22.07.2026. Исторические области 2016 года не являются действующими границами.")
+            .setMessage("Выбран архивный картографический слой 2016 года. Он не является действующей схемой 2026 года и предназначен только для справки.")
             .setItems(regions,(dialog,which)->{
                 if(which==0){showAreaCatalog();return;}
                 new AlertDialog.Builder(this).setTitle(which==1?"Справочник области":"Источники и точность")
-                    .setMessage(which==1?"Справочник охотугодий всех районов Оренбургской области готовится. До проверки данных не показываем вымышленные хозяйства и контакты.":"Карта охотника (huntmap.ru) — источник для сверки, не для неразрешённого копирования геоданных. Действующую схему необходимо сверять с официальными документами. Цветные области Бузулукского района — условная историческая демонстрация.")
+                    .setMessage(which==1?"Для наполнения исторической карты используем описания ЗОУ, ООУ и ПОУ из приложений А, Б, Г к указу № 8-ук (2016). Геометрия по всем районам ещё не оцифрована. До проверки данных не показываем вымышленные хозяйства и контакты.":"Карта охотника (huntmap.ru) — источник для сверки, не для неразрешённого копирования геоданных. Действующую схему необходимо сверять с официальными документами. Цветные области Бузулукского района — условная историческая демонстрация.")
                     .setPositiveButton("Закрыть",null).show();
             }).setNegativeButton("Закрыть",null).show();
     }
@@ -188,8 +188,8 @@ public class MainActivity extends Activity {
         FrameLayout.LayoutParams sideParams=new FrameLayout.LayoutParams(dp(48),-2,Gravity.RIGHT|Gravity.CENTER_VERTICAL);
         sideParams.rightMargin=dp(12);body.addView(side,sideParams);
         LinearLayout bottom=vertical();bottom.setBackgroundColor(PANEL);
-        message=label("⚠ Оренбургская область • проверенные границы ещё не загружены",12,0xffffd18b,true);
-        message.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Предупреждение").setMessage("Отображаемые цветные области — демонстрационные оболочки предварительных точек, а не границы охотугодий. Схема 2016 года отменена. Не используйте карту для определения законности охоты.").setPositiveButton("Понятно",null).show());
+        message=label("⚠ Архивная схема 2016 • пока показаны 2 условных контура",12,0xffffd18b,true);
+        message.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Предупреждение").setMessage("Выбрана историческая схема 2016 года, утратившая силу. Пока доступны только 2 демонстрационных контура. Это НЕ точные границы охотугодий. Не используйте карту для определения законности охоты. Не используйте карту для определения законности охоты.").setPositiveButton("Понятно",null).show());
         bottom.addView(message);
         LinearLayout buttons=horizontal();
         TextView locate=label("⌖ Моё место",15,Color.WHITE,true);
@@ -236,7 +236,7 @@ public class MainActivity extends Activity {
     }
     private void showSettings(){
         showPanel("Настройки");
-        page().addView(label("ЕГЕРЬ GPS • версия 1.5.2",17,ORANGE,true));
+        page().addView(label("ЕГЕРЬ GPS • версия 1.5.3",17,ORANGE,true));
         page().addView(label("Тёмная тема включена",15,Color.WHITE,false));
         page().addView(label("Карты: OpenStreetMap",15,Color.WHITE,false));
     }
@@ -245,7 +245,7 @@ public class MainActivity extends Activity {
         new AlertDialog.Builder(this).setItems(options,(d,which)->{
             if(which==0){showRegionCatalog();return;}
             if(which==1){historicalVisible=!historicalVisible;drawHistorical();Toast.makeText(this,historicalVisible?"Условные области включены":"Условные области скрыты",Toast.LENGTH_SHORT).show();return;}
-            if(which==2)new AlertDialog.Builder(this).setTitle("Обозначения").setMessage("🟢 Общедоступные угодья\n🟠 Закреплённые угодья\n🔴 Охраняемые территории\n🔵 Моё местоположение\n📍 Мои точки\n\nЦветные области — условные, НЕ границы. Историческая схема 2016 года отменена.").setPositiveButton("Закрыть",null).show();
+            if(which==2)new AlertDialog.Builder(this).setTitle("Обозначения").setMessage("🟢 Общедоступные угодья\n🟠 Закреплённые угодья\n🔴 Охраняемые территории\n🔵 Моё местоположение\n📍 Мои точки\n\nПока цветные области — условные, НЕ границы. Выбран архивный источник 2016 года, недействующий с 2026 года.").setPositiveButton("Закрыть",null).show();
             if(which==3)new AlertDialog.Builder(this).setTitle("Тип карты").setItems(new String[]{"OpenStreetMap","Топографическая (позже)","Спутник (позже)"},(dialog,item)->{if(item!=0)Toast.makeText(this,"Этот слой пока недоступен",Toast.LENGTH_SHORT).show();}).show();
             if(which==4)showSettings();
         }).show();
