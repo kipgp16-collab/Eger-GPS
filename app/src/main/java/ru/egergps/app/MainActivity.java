@@ -22,6 +22,7 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.Polygon;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -36,6 +37,40 @@ public class MainActivity extends Activity {
     private final ArrayList<GeoPoint> points=new ArrayList<>();
     private final ArrayList<String> names=new ArrayList<>();
     private boolean tracking=false;
+    private boolean historicalVisible=true;
+    private final ArrayList<Polygon> historicalOverlays=new ArrayList<>();
+    private static final String[] AREAS={"ООУ № 8-1","ООУ № 8-2","ООУ № 8-3","Колтубановское","НефтьТрансСервис","Прогресс плюс","Грунино — участок № 1","Грунино — участок № 2"};
+    private static final double[][][] DEMO={
+        {{52.36423333,52.98528333},{52.75416667,52.74268333},{52.74096667,53.14615},{52.54371667,53.14231667},{52.44498333,53.093},{52.36441667,52.9933}},
+        {{51.83175,52.8534},{51.8377167,52.8401333},{52.066,52.8112167},{52.28695,52.8059333},{52.35365,52.8196667},{52.1833667,52.8877833},{51.83665,52.8654}},
+        {{51.92263333,52.93186667},{52.84013333,51.83771667},{52.8534,51.83175},{52.86593333,51.83663333},{52.85811667,52.15485},{51.99341667,52.9446},{51.95451667,52.95448333}}
+    };
+    private void drawHistorical(){
+        if(map==null)return;
+        for(Polygon p:historicalOverlays)map.getOverlays().remove(p);
+        historicalOverlays.clear();
+        if(!historicalVisible){map.invalidate();return;}
+        int[] colors={0xff3bc977,0xff54baff,0xffffab45};
+        for(int i=0;i<DEMO.length;i++){
+            Polygon poly=new Polygon();
+            ArrayList<GeoPoint> vertices=new ArrayList<>();
+            for(double[] pair:DEMO[i])vertices.add(new GeoPoint(pair[0],pair[1]));
+            poly.setPoints(vertices);
+            poly.setFillColor((colors[i]&0x00ffffff)|0x36000000);
+            poly.setStrokeColor(colors[i]);poly.setStrokeWidth(dp(2));
+            poly.setTitle(AREAS[i]+" • УСЛОВНАЯ ОБЛАСТЬ, НЕ ГРАНИЦА");
+            poly.setSubDescription("Историческая схема 2016 года отменена. Геометрия приблизительная, координаты не проверены. Не использовать для определения разрешённых мест охоты.");
+            map.getOverlays().add(poly);historicalOverlays.add(poly);
+        }
+        map.invalidate();
+    }
+    private void showAreaCatalog(){
+        String[] items=new String[AREAS.length];
+        for(int i=0;i<AREAS.length;i++)items[i]=AREAS[i]+(i<3?" • общедоступное":" • закреплённое")+(i==0||i==1||i==3?" • есть предварительные точки":" • контур не установлен");
+        new AlertDialog.Builder(this).setTitle("Бузулукский район • 2016 (ОТМЕНЕНА)").setItems(items,(d,index)->new AlertDialog.Builder(this)
+            .setTitle(AREAS[index]).setMessage("Историческая схема 2016 года отменена. "+(index==0||index==1||index==3?"Есть предварительные контрольные точки. Демонстрационная заливка не является границей угодья.":"Проверенная геометрия отсутствует, участок присутствует только в каталоге.")+"\n\nНе использовать для определения законности охоты.")
+            .setPositiveButton("Закрыть",null).show()).setNegativeButton("Закрыть",null).show();
+    }
 
     private int dp(float value){return (int)(value*getResources().getDisplayMetrics().density+0.5f);}
     private TextView label(String text,int size,int color,boolean bold){
@@ -114,6 +149,7 @@ public class MainActivity extends Activity {
             ((android.view.ViewGroup)map.getParent()).removeView(map);
         }
         body.addView(map,new FrameLayout.LayoutParams(-1,-1));
+        drawHistorical();
         LinearLayout side=vertical();side.setBackgroundColor(PANEL);
         String[] actions={"➤","+","−","⊙"};
         for(int i=0;i<actions.length;i++){
@@ -129,7 +165,8 @@ public class MainActivity extends Activity {
         FrameLayout.LayoutParams sideParams=new FrameLayout.LayoutParams(dp(48),-2,Gravity.RIGHT|Gravity.CENTER_VERTICAL);
         sideParams.rightMargin=dp(12);body.addView(side,sideParams);
         LinearLayout bottom=vertical();bottom.setBackgroundColor(PANEL);
-        message=label("Карта OSM • границы угодий пока не загружены",12,0xffb9ccc4,false);
+        message=label("⚠ 2016: схема отменена • области условные, НЕ границы",12,0xffffd18b,true);
+        message.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Предупреждение").setMessage("Отображаемые цветные области — демонстрационные оболочки предварительных точек, а не границы охотугодий. Схема 2016 года отменена. Не используйте карту для определения законности охоты.").setPositiveButton("Понятно",null).show());
         bottom.addView(message);
         LinearLayout buttons=horizontal();
         TextView locate=label("⌖ Моё место",15,Color.WHITE,true);
@@ -176,16 +213,18 @@ public class MainActivity extends Activity {
     }
     private void showSettings(){
         showPanel("Настройки");
-        page().addView(label("ЕГЕРЬ GPS • версия 1.3.1",17,ORANGE,true));
+        page().addView(label("ЕГЕРЬ GPS • версия 1.4.0",17,ORANGE,true));
         page().addView(label("Тёмная тема включена",15,Color.WHITE,false));
         page().addView(label("Карты: OpenStreetMap",15,Color.WHITE,false));
     }
     private void showMenu(){
-        String[] options={"Обозначения на карте","Тип карты","Информация о приложении"};
+        String[] options={"Угодья Бузулукского района (2016)","Показать / скрыть исторические области","Обозначения на карте","Тип карты","Информация о приложении"};
         new AlertDialog.Builder(this).setItems(options,(d,which)->{
-            if(which==0)new AlertDialog.Builder(this).setTitle("Обозначения").setMessage("🟢 Общедоступные угодья\n🟠 Закреплённые угодья\n🔴 Охраняемые территории\n🔵 Моё местоположение\n📍 Мои точки\n\nГраницы угодий появятся после загрузки достоверных данных.").setPositiveButton("Закрыть",null).show();
-            if(which==1)new AlertDialog.Builder(this).setTitle("Тип карты").setItems(new String[]{"OpenStreetMap","Топографическая (позже)","Спутник (позже)"},(dialog,item)->{if(item!=0)Toast.makeText(this,"Этот слой пока недоступен",Toast.LENGTH_SHORT).show();}).show();
-            if(which==2)showSettings();
+            if(which==0){showAreaCatalog();return;}
+            if(which==1){historicalVisible=!historicalVisible;drawHistorical();Toast.makeText(this,historicalVisible?"Условные области включены":"Условные области скрыты",Toast.LENGTH_SHORT).show();return;}
+            if(which==2)new AlertDialog.Builder(this).setTitle("Обозначения").setMessage("🟢 Общедоступные угодья\n🟠 Закреплённые угодья\n🔴 Охраняемые территории\n🔵 Моё местоположение\n📍 Мои точки\n\nЦветные области — условные, НЕ границы. Историческая схема 2016 года отменена.").setPositiveButton("Закрыть",null).show();
+            if(which==3)new AlertDialog.Builder(this).setTitle("Тип карты").setItems(new String[]{"OpenStreetMap","Топографическая (позже)","Спутник (позже)"},(dialog,item)->{if(item!=0)Toast.makeText(this,"Этот слой пока недоступен",Toast.LENGTH_SHORT).show();}).show();
+            if(which==4)showSettings();
         }).show();
     }
     private void addPoint(){
